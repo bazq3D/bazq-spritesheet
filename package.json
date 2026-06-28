@@ -1,0 +1,27 @@
+{
+  "name": "bazq-gif-to-spritesheet-studio",
+  "version": "1.0.0",
+  "description": "An ultra-premium, high-performance web application to convert GIFs into spritesheets.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:exe": "electron-builder --win portable"
+  },
+  "author": "bazq",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "net.basez.gifcreator",
+    "productName": "bazq-gif-to-spritesheet-studio",
+    "win": {
+      "target": "portable",
+      "icon": "bazq.png"
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bazq gif to spritesheet studio</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar (Left) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="bazq.gif" alt="bazq" class="logo-img">
+                <div class="logo-text">
+                    <h1>gif to spritesheet</h1>
+                    <p>by <span class="brand-tag">bazq</span></p>
+                </div>
+            </div>
+
+            <!-- Upload Dropzone -->
+            <div class="sidebar-section">
+                <div class="dropzone" id="dropzone">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <div class="dropzone-text">
+                        <h4>Drag & Drop GIFs</h4>
+                        <p>or click to browse</p>
+                    </div>
+                    <input type="file" id="fileInput" multiple accept="image/gif" style="display: none;">
+                </div>
+                <button class="btn btn-secondary btn-full" id="btnLoadDemo" style="margin-top: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    Load Demo Animation
+                </button>
+            </div>
+
+            <!-- Selected Files Listbox -->
+            <div class="sidebar-section listbox-section" flex="1">
+                <div class="section-title">
+                    <span>Selected Files:</span>
+                    <span id="gifCount" class="badge">0</span>
+                </div>
+                <div class="listbox" id="gifList">
+                    <!-- JS will populate items here -->
+                    <div class="listbox-empty">No files selected</div>
+                </div>
+
+                <!-- File Management Actions -->
+                <div class="listbox-actions">
+                    <button class="btn btn-danger btn-sm" id="btnRemoveSelected" disabled>Remove</button>
+                    <button class="btn btn-secondary btn-sm" id="btnClearAll" disabled>Clear All</button>
+                </div>
+                <div class="listbox-actions" style="margin-top: 6px;">
+                    <button class="btn btn-secondary btn-sm" id="btnMoveUp" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg> Move Up
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="btnMoveDown" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg> Move Down
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selected File Settings -->
+            <div class="sidebar-section" id="selectedFileSettings"
+                style="display: none; margin-top: 16px; border-top: 1px solid var(--border-main); padding-top: 16px;">
+                <div class="section-title" id="selectedFileName">File Settings</div>
+                <div class="control-grid" style="margin-top: 8px;">
+                    <div class="form-group control-full">
+                        <label for="gifTargetFrames">Frames to Use (Downsample)</label>
+                        <input type="number" id="gifTargetFrames" value="16" min="1">
+                    </div>
+                    <div class="form-group control-full">
+                        <label for="gifFrameSelection">Custom Frame Selection</label>
+                        <input type="text" id="gifFrameSelection" placeholder="e.g. 0-9, 12, 15-20" title="Specify exact frame indices (0-based) separated by commas or ranges.">
+                    </div>
+                    <div class="form-group control-full">
+                        <button class="btn btn-secondary btn-full" id="btnSelectFramesVisually" style="height: 28px; font-size: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line></svg>
+                            Select Frames Visually
+                        </button>
+                    </div>
+                    <div class="form-group control-full">
+                        <label for="gifFitMode">Frame Fit Mode</label>
+                        <select id="gifFitMode">
+                            <option value="stretch">Stretch to Fill</option>
+                            <option value="contain">Aspect Fit (Contain)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard (Right) -->
+        <main class="main-content">
+            <!-- Top Metric Cards -->
+            <section class="metrics-row">
+                <div class="metric-card">
+                    <span class="metric-label">TOTAL FRAMES</span>
+                    <span class="metric-value" id="statusTotalFrames">0</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">SPRITESHEET DIMENSIONS</span>
+                    <span class="metric-value" id="statusDimensions">0 x 0 px</span>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-label">LAYOUT GRID</span>
+                    <span class="metric-value" id="statusGrid">0 x 0</span>
+                </div>
+            </section>
+
+            <!-- Dashboard Content Grid -->
+            <div class="dashboard-grid">
+                <!-- Left Column: Settings & Player -->
+                <div class="dashboard-col">
+                    <!-- Card 1: Layout Configuration -->
+                    <div class="card">
+                        <div class="card-header">Layout Configuration</div>
+                        <div class="card-body">
+                            <div class="control-grid">
+                                <div class="form-group control-full">
+                                    <label for="layoutMode">Layout Mode</label>
+                                    <select id="layoutMode">
+                                        <option value="grid">Grid Layout</option>
+                                        <option value="horizontal">Horizontal Row</option>
+                                        <option value="vertical">Vertical Column</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group grid-only">
+                                    <label for="gridCols">Columns</label>
+                                    <input type="number" id="gridCols" value="8" min="1">
+                                </div>
+
+                                <div class="form-group grid-only">
+                                    <label for="gridRows">Rows</label>
+                                    <input type="number" id="gridRows" value="4" min="1" disabled>
+                                </div>
+
+                                <div class="form-group grid-only"
+                                    style="align-self: flex-end; height: 32px; display: flex; flex-direction: column; gap: 4px; justify-content: center;">
+                                    <label class="checkbox-group">
+                                        <input type="checkbox" id="autoGrid" checked>
+                                        Auto Grid
+                                    </label>
+                                    <label class="checkbox-group" id="lblAutoRows" style="display: none;">
+                                        <input type="checkbox" id="autoRows" checked>
+                                        Auto Rows
+                                    </label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="spacing">Spacing (px)</label>
+                                    <input type="number" id="spacing" value="0" min="0">
+                                </div>
+
+                                <div class="form-group grid-only">
+                                    <label for="direction">Direction</label>
+                                    <select id="direction">
+                                        <option value="row">Row-major</option>
+                                        <option value="col">Column-major</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group control-full">
+                                    <label>Background</label>
+                                    <div class="color-picker-container">
+                                        <label class="checkbox-group" style="margin-right: 12px;">
+                                            <input type="checkbox" id="bgTransparent" checked>
+                                            Transparent
+                                        </label>
+                                        <input type="color" id="bgColor" value="#000000" disabled>
+                                        <input type="text" id="bgColorText" value="#000000" placeholder="#000000"
+                                            style="width: 80px;" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Output & Scaling -->
+                    <div class="card">
+                        <div class="card-header">Output & Scaling</div>
+                        <div class="card-body">
+                            <div class="control-grid">
+                                <div class="form-group control-full">
+                                    <label for="resMode">Resolution Mode</label>
+                                    <select id="resMode">
+                                        <option value="fixed">Fixed Spritesheet Size</option>
+                                        <option value="scale">Scale of Original</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group res-scale-only" style="display: none;">
+                                    <label for="scale">Scale Factor</label>
+                                    <div class="range-slider-container">
+                                        <input type="range" id="scale" min="0.1" max="4" step="0.05" value="1">
+                                        <span class="range-value" id="scaleValue">100%</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group res-fixed-only">
+                                    <label for="totalWidth">Total Width (px)</label>
+                                    <input type="number" id="totalWidth" value="2048" min="1">
+                                </div>
+
+                                <div class="form-group res-fixed-only">
+                                    <label for="totalHeight">Total Height (px)</label>
+                                    <input type="number" id="totalHeight" value="1024" min="1">
+                                </div>
+
+                                <div class="form-group control-full res-scale-only"
+                                    style="display: none; margin-top: 4px;">
+                                    <label class="checkbox-group">
+                                        <input type="checkbox" id="overrideSize">
+                                        Override Frame Resolution
+                                    </label>
+                                </div>
+
+                                <div class="form-group size-override" style="display: none;">
+                                    <label for="frameWidth">Force Width (px)</label>
+                                    <input type="number" id="frameWidth" value="64" min="1">
+                                </div>
+
+                                <div class="form-group size-override" style="display: none;">
+                                    <label for="frameHeight">Force Height (px)</label>
+                                    <input type="number" id="frameHeight" value="64" min="1">
+                                </div>
+
+                                <div class="form-group control-full size-override" style="display: none;">
+                                    <label for="fitMode">Aspect Fit Mode</label>
+                                    <select id="fitMode">
+                                        <option value="stretch">Stretch to Fill</option>
+                                        <option value="contain">Aspect Fit (Letterbox)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Animation Player -->
+                    <div class="card">
+                        <div class="card-header">Animation Player</div>
+                        <div class="card-body player-card">
+                            <div class="player-display">
+                                <canvas id="playerCanvas" width="64" height="64"></canvas>
+                            </div>
+                            <div class="player-controls">
+                                <div class="player-title-row">
+                                    <div class="fps-container">
+                                        <span class="fps-label">FPS:</span>
+                                        <input type="number" id="playerFps" class="fps-input" value="15" min="1"
+                                            max="60">
+                                    </div>
+                                    <select id="playerGifSelect" class="player-select">
+                                        <option value="all">All Combined</option>
+                                    </select>
+                                </div>
+                                <div class="player-buttons" style="margin-top: 8px;">
+                                    <button class="btn btn-secondary" id="btnPlayPause" style="width: 100%;">
+                                        <span id="playText"
+                                            style="display: flex; align-items: center; gap: 6px; justify-content: center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                            </svg>
+                                            Play Animation
+                                        </span>
+                                        <span id="pauseText"
+                                            style="display: none; align-items: center; gap: 6px; justify-content: center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <rect x="6" y="4" width="4" height="16"></rect>
+                                                <rect x="14" y="4" width="4" height="16"></rect>
+                                            </svg>
+                                            Pause Animation
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Preview & Exports -->
+                <div class="dashboard-col" style="flex: 1.3;">
+                    <!-- Card 4: Spritesheet Preview -->
+                    <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="card-header"
+                            style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Spritesheet Preview</span>
+                            <!-- Zoom Toolbar -->
+                            <div class="preview-toolbar">
+                                <button class="btn btn-secondary btn-icon" id="btnZoomOut" title="Zoom Out">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </button>
+                                <span class="zoom-badge" id="zoomBadge">100%</span>
+                                <button class="btn btn-secondary btn-icon" id="btnZoomIn" title="Zoom In">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </button>
+                                <button class="btn btn-secondary btn-icon" id="btnZoomReset" title="Fit to Screen"
+                                    style="margin-left: 4px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M15 3h6v6"></path>
+                                        <path d="M9 21H3v-6"></path>
+                                        <path d="M21 3l-7 7"></path>
+                                        <path d="M3 21l7-7"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body"
+                            style="padding: 0; position: relative; flex: 1; display: flex; min-height: 450px;">
+                            <div class="preview-container" id="previewContainer">
+                                <div class="preview-canvas-wrapper" id="canvasWrapper">
+                                    <canvas id="spritesheetCanvas"></canvas>
+                                </div>
+
+                                <!-- Canvas Size/Limit Warning -->
+                                <div class="canvas-warning" id="canvasWarning" style="display: none;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path
+                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                                        </path>
+                                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                    </svg>
+                                    Exceeds canvas limits (16,384px). Scale down.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 5: Export Actions -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="card-header">Export Spritesheet</div>
+                        <div class="card-body" style="display: flex; gap: 12px; padding: 16px;">
+                            <button class="btn btn-primary" id="btnDownloadPNG" style="flex: 1; height: 38px;" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                Download PNG Spritesheet
+                            </button>
+                            <button class="btn btn-secondary" id="btnDownloadJSON" style="flex: 1; height: 38px;"
+                                disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                                Download JSON Metadata
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+    </div>
+
+    <!-- Visual Frame Selector Modal -->
+    <div class="modal-overlay" id="frameSelectorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Select Frames: <span id="modalGifName" style="color: var(--color-blue);">morshu.gif</span></h3>
+                <button class="modal-close" id="btnModalClose">&times;</button>
+            </div>
+            <div class="modal-toolbar">
+                <button class="btn btn-sm btn-secondary" id="btnModalSelectAll">Select All</button>
+                <button class="btn btn-sm btn-secondary" id="btnModalClearAll">Clear All</button>
+                <button class="btn btn-sm btn-secondary" id="btnModalInvert">Invert</button>
+                <div class="modal-nth-container">
+                    <span>Select every</span>
+                    <input type="number" id="modalNthInput" value="2" min="2" style="width: 45px; height: 24px; padding: 2px 4px; border: 1px solid var(--border-main); border-radius: var(--radius); text-align: center; background-color: var(--bg-input); color: var(--text-primary);">
+                    <span>th frame</span>
+                    <button class="btn btn-sm btn-primary" id="btnModalNth" style="height: 24px;">Apply</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="frame-grid" id="modalFrameGrid">
+                    <!-- Thumbnails will be generated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="modal-status-text" id="modalStatusText" style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Selected: 0 / 0 frames</span>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" id="btnModalCancel">Cancel</button>
+                    <button class="btn btn-primary" id="btnModalApply">Apply Selection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>

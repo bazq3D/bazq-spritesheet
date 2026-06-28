@@ -1,0 +1,22 @@
+# Logs and history
+GIF to Spritesheet Creator.md
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build outputs
+dist/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+eslint-debug.log*
+
+# Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
